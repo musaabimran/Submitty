@@ -70,19 +70,21 @@ class CourseMaterialsController extends AbstractController {
         $this->core->getOutput()->useHeader(false);
         $this->core->getOutput()->useFooter(false);
 
-        if ($mime_type === "application/pdf" || (str_starts_with($mime_type, "image/") && $mime_type !== "image/svg+xml")) {
+        if (in_array($mime_type, FileUtils::Allowed_Inline_Types)) {
             header("Content-type: " . $mime_type);
             header('Content-Disposition: inline; filename="' . $file_name . '"');
             readfile($corrected_name);
             $this->core->getOutput()->renderString($full_path);
         }
         else {
-            $contents = file_get_contents($corrected_name);
-            return new WebResponse(
-                MiscView::class,
-                "displayFile",
-                $contents
-            );
+            if (in_array($mime_type, FileUtils::Allowed_Text_Types)) {
+                $contents = file_get_contents($corrected_name);
+                return new WebResponse(
+                    MiscView::class,
+                    "displayFile",
+                    $contents
+                );
+            }
         }
     }
 
